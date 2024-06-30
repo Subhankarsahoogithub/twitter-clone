@@ -1,7 +1,7 @@
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import { generateTokenAndSetCookie } from '../lib/utils/generateToken.js';
-import mongoose from 'mongoose';
+
 
 export const signupController=async(req,res)=>{
         try {
@@ -83,7 +83,7 @@ export const loginController=async(req,res)=>{
         generateTokenAndSetCookie(user._id,res);
 
         //sucessful:
-        return res.status(200).json({
+        res.status(200).json({
                     _id:user._id,
                     fullname:user.fullname,
                     username:user.username,
