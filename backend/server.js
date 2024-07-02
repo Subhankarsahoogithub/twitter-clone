@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import {v2 as cloudinary} from 'cloudinary';
 
 
-import authRoute from './routes/auth.route.js'
+import authRoute from './routes/auth.route.js' 
 import userRoute from './routes/user.route.js'
 import postRoute from './routes/post.route.js'
 import notificationRoute from './routes/notification.route.js'
@@ -21,7 +21,7 @@ const app=express();
 const PORT=process.env.PORT || 5000;
 
 //middleware: parese req.body
-app.use(express.json());
+app.use(express.json({limit:"5mb"}));
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
 
