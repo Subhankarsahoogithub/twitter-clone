@@ -22,7 +22,7 @@ export const createPost=async(req,res)=>{
 
         //upload in cloudinary:
         if(img){
-            const uploadedResponse=cloudinary.uploader.upload(img);
+            const uploadedResponse=await cloudinary.uploader.upload(img);
             img = uploadedResponse.secure_url;
         }
          
@@ -30,7 +30,7 @@ export const createPost=async(req,res)=>{
         const newPost=new Post({
               user:userId,
               text,
-              img
+              img,
         })
         //save it in the database:
         await newPost.save();
