@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import {useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from 'react-hot-toast'
 import LoadingSpinner from './LoadingSpinner'
+import { formatPostDate } from "../../utils/db/date";
 
 
 const Post = ({ post }) => {
@@ -16,6 +17,16 @@ const Post = ({ post }) => {
 		queryKey:['authUser']
 	})
 	const queryClient=useQueryClient();
+
+	const postOwner = post.user;
+	const isLiked = post.likes.includes(authUser._id)
+
+	//check if its my post or not:
+	const isMyPost = authUser._id === post.user._id;
+
+	const formattedDate = formatPostDate(post.createdAt);
+
+	//mutations:
 
 	const {mutate:likePost,isPending:isLiking}=useMutation({
          mutationFn:async()=>{
@@ -83,15 +94,43 @@ const Post = ({ post }) => {
 		   }
 	})
 
-	const postOwner = post.user;
-	const isLiked = post.likes.includes(authUser._id)
+	const {mutate: commentPost , isPending:isCommenting}=useMutation({
+            mutationFn:async()=>{
+				 try {
+					//make a post request for comment on a post to backend:
+					const res=await fetch(`/api/posts/comment/${post._id}`,{
+						method:"POST",
+						headers:{
+							"Content-Type":"application/json"
+						},
+						body:JSON.stringify({text:comment})
+					});
+					//get the data:
+					const data=await res.json();
+					//response not valid:
+					if(!res.ok)throw new Error(data.error || "something went wrong:");
+					//return data:
+					return data;
+				 } catch (error) {
+					throw new Error(error.message);
+				 }
+			},
+			onSuccess:()=>{
+				toast.success("comment added");
+				//clear:
+				setComment("")
+				//invalidate query:
+				queryClient.invalidateQueries({
+					queryKey:["posts"]
+				})
 
-	//check if its my post or not:
-	const isMyPost = authUser._id === post.user._id;
+			},
+			onError:(error)=>{
+				throw new Error(error.message)
+			}
+	})
 
-	const formattedDate = "1h";
-
-	const isCommenting = false;
+    //functions:
 
 	//delete your own post:
 	const handleDeletePost = () => {
@@ -100,6 +139,10 @@ const Post = ({ post }) => {
 
 	const handlePostComment = (e) => {
 		e.preventDefault();
+		//if loading just return:
+		if(isCommenting)return;
+		//else call the function:
+		commentPost();
 	};
 
 	const handleLikePost = () => {
