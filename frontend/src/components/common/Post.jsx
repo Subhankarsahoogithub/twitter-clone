@@ -17,7 +17,46 @@ const Post = ({ post }) => {
 	})
 	const queryClient=useQueryClient();
 
-	const {mutate:deletePost,isPending}= useMutation({
+	const {mutate:likePost,isPending:isLiking}=useMutation({
+         mutationFn:async()=>{
+			try {
+			  //make a post request to like/dislike the post on backend:
+			  const res= await fetch(`/api/posts/like/${post._id}`,{
+				 method:"POST"
+			  });
+			  //get the data:
+			  const data= await res.json();
+			  //invalid response:
+			  if(!res.ok) throw new Error(data.error || "something went wrong:");
+			  //return :
+			  return data;
+			} catch (error) {
+				throw new Error(error);
+			}
+		 },
+		 onSuccess:(updatedLikes)=>{
+			
+			//invalidate but everytime it refetch all the posts:
+			//queryClient.invalidateQueries({queryKey:["posts"]})
+			
+			//optimal solution:
+			queryClient.setQueryData(["posts"],(oldData)=>{
+                return oldData.map((p)=>{
+                    //if post is liked: update the likes count:
+					if(p._id === post._id){
+                         return {...p,likes:updatedLikes}
+					}
+					//not liked:
+					return p;
+				})
+			})
+		 },
+		 onError:(error)=>{
+			toast.error(error.message);
+		 }
+	})
+
+	const {mutate:deletePost,isPending:isDeleting}= useMutation({
            mutationFn:async()=>{
 			  try {
 				//make a delete request on backend:
@@ -45,7 +84,7 @@ const Post = ({ post }) => {
 	})
 
 	const postOwner = post.user;
-	const isLiked = false;
+	const isLiked = post.likes.includes(authUser._id)
 
 	//check if its my post or not:
 	const isMyPost = authUser._id === post.user._id;
@@ -63,7 +102,11 @@ const Post = ({ post }) => {
 		e.preventDefault();
 	};
 
-	const handleLikePost = () => {};
+	const handleLikePost = () => {
+		//if in loading state , just return:
+		if(isLiking)return;
+		likePost()
+	};
 
 	return (
 		<>
@@ -85,9 +128,9 @@ const Post = ({ post }) => {
 						</span>
 						{isMyPost && (
 							<span className='flex justify-end flex-1'>
-								{!isPending && (<FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />)}
+								{!isDeleting && (<FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />)}
 
-								{isPending && (<LoadingSpinner size="sm"/>)}
+								{isDeleting && (<LoadingSpinner size="sm"/>)}
 							</span>
 						)}
 					</div>
@@ -171,10 +214,11 @@ const Post = ({ post }) => {
 								<span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
 							</div>
 							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
-								{!isLiked && (
+							    {isLiking && <LoadingSpinner size="sm"/>}
+								{!isLiked && !isLiking && (
 									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
 								)}
-								{isLiked && <FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
+								{isLiked && !isLiking && <FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
 
 								<span
 									className={`text-sm text-slate-500 group-hover:text-pink-500 ${
