@@ -1,9 +1,28 @@
 import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skeletons/RightPanalSkeleton";
-import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/dummy";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 const RightPanel = () => {
-	const isLoading = false;
+	
+	const {data:suggestedUsers,isLoading,}=useQuery({
+		queryKey:["suggestedUsers"],
+		queryFn:async()=>{
+			try {
+			  //make a get request for suggested users on backend:
+			  const res=await fetch("/api/user/suggested");
+			  //get the data:
+			  const data=await res.json();
+			  //invalid response:
+			  if(!res.ok) throw new Error(data.error || "something went wrong:");
+			  //send :
+			  return data;
+			} catch (error) {
+				throw new Error(error.message)
+			}
+		}
+	})
+
+	if (suggestedUsers?.length === 0) return <div className='md:w-64 w-0'></div>;
 
 	return (
 		<div className='hidden lg:block my-4 mx-2'>
@@ -20,7 +39,7 @@ const RightPanel = () => {
 						</>
 					)}
 					{!isLoading &&
-						USERS_FOR_RIGHT_PANEL?.map((user) => (
+						suggestedUsers?.map((user) => (
 							<Link
 								to={`/profile/${user.username}`}
 								className='flex items-center justify-between gap-4'
