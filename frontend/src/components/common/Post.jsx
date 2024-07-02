@@ -20,10 +20,8 @@ const Post = ({ post }) => {
 
 	const postOwner = post.user;
 	const isLiked = post.likes.includes(authUser._id)
-
 	//check if its my post or not:
 	const isMyPost = authUser._id === post.user._id;
-
 	const formattedDate = formatPostDate(post.createdAt);
 
 	//mutations:
