@@ -12,6 +12,10 @@ const Sidebar = () => {
 	 
 	const queryClient =useQueryClient();
 
+	const {data:authUser}=useQuery({
+		queryKey:['authUser']
+	})
+
     const {mutate:logout,isError,isPending,error}=useMutation({
 		mutationFn: async()=>{
 			try {
@@ -32,6 +36,7 @@ const Sidebar = () => {
 		},
 
 		onSuccess:()=>{
+			toast.success("loged out sucessfully..")
 			queryClient.invalidateQueries({
 				queryKey:["authUser"]
 			})
@@ -41,9 +46,7 @@ const Sidebar = () => {
 		}
 	})
 
-	const {data:authUser}=useQuery({
-		queryKey:['authUser']
-	})
+	
 
 
 	return (
