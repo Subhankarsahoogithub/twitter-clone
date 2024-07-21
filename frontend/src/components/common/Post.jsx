@@ -25,6 +25,32 @@ const Post = ({ post }) => {
 	const formattedDate = formatPostDate(post.createdAt);
 
 	//mutations:
+	const {mutate:deletePost,isPending:isDeleting}= useMutation({
+		mutationFn:async()=>{
+		   try {
+			 //make a delete request on backend:
+			 const res=await fetch(`/api/posts/${post._id}`,{
+				 method:"DELETE"
+			 });
+			 //get the data:
+			 const data=await res.json();
+			 //res not valid:
+			 if(!res.ok) throw new Error(data.error || "something went wrong:");
+			 //return the data:
+			 return data;
+		   } catch (error) {
+			 throw new Error(error);
+		   }
+		},
+
+		onSuccess:()=>{
+		   toast.success("post deleted sucessfully:")
+		   //invalidata the query to refetch the data:
+		   queryClient.invalidateQueries({
+			  queryKey:["posts"]
+		   })
+		}
+ })
 
 	const {mutate:likePost,isPending:isLiking}=useMutation({
          mutationFn:async()=>{
@@ -63,33 +89,6 @@ const Post = ({ post }) => {
 		 onError:(error)=>{
 			toast.error(error.message);
 		 }
-	})
-
-	const {mutate:deletePost,isPending:isDeleting}= useMutation({
-           mutationFn:async()=>{
-			  try {
-				//make a delete request on backend:
-				const res=await fetch(`/api/posts/${post._id}`,{
-					method:"DELETE"
-				});
-				//get the data:
-				const data=await res.json();
-				//res not valid:
-				if(!res.ok) throw new Error(data.error || "something went wrong:");
-				//return the data:
-				return data;
-			  } catch (error) {
-				throw new Error(error);
-			  }
-		   },
-
-		   onSuccess:()=>{
-			  toast.success("post deleted sucessfully:")
-			  //invalidata the query to refetch the data:
-			  queryClient.invalidateQueries({
-				 queryKey:["posts"]
-			  })
-		   }
 	})
 
 	const {mutate: commentPost , isPending:isCommenting}=useMutation({
