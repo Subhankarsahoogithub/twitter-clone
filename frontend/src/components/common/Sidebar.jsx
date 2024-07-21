@@ -15,7 +15,7 @@ const Sidebar = () => {
     mutationFn: async () => {
       try {
         //make a post request on logout:
-        const res = await fetch("http://localhost:3000/api/auth/logout", {
+        const res = await fetch("/api/auth/logout", {
           method: "POST",
         });
         //get the data:

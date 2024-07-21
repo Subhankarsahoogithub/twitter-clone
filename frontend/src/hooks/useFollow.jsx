@@ -9,12 +9,9 @@ const useFollow = () => {
     mutationFn: async (userId) => {
       try {
         //make a post request for follow/unfollow on the backend:
-        const res = await fetch(
-          `http://localhost:3000/api/user/follow/${userId}`,
-          {
-            method: "POST",
-          }
-        );
+        const res = await fetch(`/api/user/follow/${userId}`, {
+          method: "POST",
+        });
         //get the data:
         const data = await res.json();
         //invalid response:
